@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>贪吃蛇</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+
+        }
+
+        #gameRoom{
+            width: 360px;
+            height: 420px;
+            border: 5px black solid;
+            border-radius: 3%;
+            margin: 50px auto;
+            background-color: #b7d4a8;
+            
+        }
+
+        #gameFrame{
+            width: 302px;
+            height: 302px;
+            border: 1px black solid;
+            margin: 20px auto;
+            position: relative
+
+        }
+
+        /* #snake {
+            position: absolute;
+        } */
+
+        #snake > div{
+            width: 10px;
+            height: 10px;
+            background-color: black;
+            border: 1px #b7d4a8 solid;
+            position: absolute;
+
+        }
+
+        #food{
+            width: 10px;
+            height: 10px;
+            position: absolute;
+            left: 120px;
+            top: 120px;
+            display: flex;
+            flex-flow: wrap;
+
+        }
+
+        #food > div {
+            width: 5px;
+            height: 5px;
+            background-color: black;
+            transform: rotate(45deg);
+
+        }
+
+        #info {
+            width: 302px;
+            margin: 25px auto;
+            display: flex;
+            justify-content: space-between;
+            font: 700 18px courier;
+
+        }
+
+    </style>
+</head>
+<body>
+    <div id="gameRoom">
+        <div id="gameFrame">
+            <div id="snake">
+                <div></div>
+
+            </div>
+
+            <div id="food">
+                <div></div>
+                <div></div>
+                <div></div>
+                <div></div>
+
+            </div>
+
+        </div>
+
+        <div id="info">
+            <span> SCORE: <span id="score">0</span></span>
+            <span> LEVEL: <span id="level">1</span></span>
+        </div>
+
+    </div> 
+
+
+    <script>
+        // 获取蛇容器，蛇身体，食物的DOM元素
+        const snake = document.getElementById('snake')
+        const snakeBody = snake.getElementsByTagName('div')
+        const food = document.getElementById('food')
+
+        const score = document.getElementById('score')
+        const level = document.getElementById('level')
+
+        let point = 0
+        let lev = 1
+
+        
+        // 初始化方向
+        let dir = "ArrowRight"
+        // 为事件监听设置有效按键
+        const dirArray = ["ArrowDown", "ArrowUp", "ArrowRight", "ArrowLeft"]
+
+        const oppDir = {
+            ArrowUp: "ArrowDown",
+            ArrowDown: "ArrowUp",
+            ArrowLeft: "ArrowRight",
+            ArrowRight: "ArrowLeft"
+        }
+
+        let dirCanChange = true 
+
+        // 随机位置生成新的食物
+        function newFood(){
+            function fn(){
+                return Math.floor(Math.random() * 30) * 10
+            } 
+            food.style.top = fn() + 'px'
+            food.style.left = fn() + 'px'
+        }
+
+        // 监听键盘事件，获取新的方向
+        document.addEventListener("keydown", (event)=>{
+            if (dirCanChange && dirArray.includes(event.key)){
+                // 当蛇的身体超过2节时 禁止掉头
+                if(snakeBody.length < 2 || event.key !== oppDir[dir]){
+                    dir = event.key
+                    dirCanChange = false
+                }
+            }
+        })
+
+        // 创建事件循环，让蛇保持移动
+        setTimeout(function move(){
+
+            let snakeHead = snakeBody[0]
+            let x = snakeHead.offsetLeft
+            let y = snakeHead.offsetTop
+
+            switch(dir){
+                case 'ArrowUp': y -= 10
+                    break;
+                case 'ArrowDown': y += 10
+                    break;
+                case 'ArrowLeft': x -= 10
+                    break;
+                case 'ArrowRight': x += 10
+                    break;
+            }
+
+            // 撞墙结束游戏
+            if (x < 0 || x > 290 || y < 0 || y > 290){
+                alert('撞到墙了，游戏结束')
+                return
+            }
+            
+            // 撞到自身结束游戏
+            for(let i=0; i<snakeBody.length - 1; i++){
+                if (snakeBody[i].offsetTop === y &&
+                    snakeBody[i].offsetLeft === x
+                ){
+                    alert('撞到身体了，游戏结束')
+                    return
+                }
+            }
+                
+            // 碰到食物需要重新生成新的食物，改变计分和难度
+            if (food.offsetTop === y && 
+                food.offsetLeft === x
+            ){
+                snake.insertAdjacentHTML("beforeend", "<div/>");
+                newFood();
+
+                point += 10;
+                score.textContent = point
+
+                if(point%30 === 0 && lev < 12){
+                    lev += 1;
+                    level.textContent = lev
+                }
+            }
+
+           
+            // snakeHead.style.left = x + 'px';
+            // snakeHead.style.top =  y + 'px';
+
+            const tail = snakeBody[snakeBody.length - 1]
+            tail.style.left = x + 'px'
+            tail.style.top = y + 'px'
+            snake.insertAdjacentElement("afterbegin", tail)
+
+            dirCanChange = true
+            setTimeout(move, 500 - lev*40)
+
+        }, 300)
+
+    </script>
+    
+</body>
+</html>
