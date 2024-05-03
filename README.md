@@ -1,0 +1,2 @@
+# greedysnake
+a web game
